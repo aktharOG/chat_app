@@ -21,17 +21,23 @@ class _MessageDetailsState extends State<GroupMessage> {
          TextEditingController message = TextEditingController();
  late IO.Socket  _socket;
         
-          
+            final ScrollController _scrollController = ScrollController();
+
          @override
   void initState() {
     // TODO: implement initState
     super.initState();
-  _socket =  IO.io("http://192.168.29.28:3000",IO.OptionBuilder().setTransports(['websocket']).setQuery({'username':widget.name}).build());
+  _socket =  IO.io("https://my-chat-app-1slx.onrender.com",IO.OptionBuilder().setTransports(['websocket']).setQuery({'username':widget.name}).build());
   connetSocket();
   provider = Provider.of<HomeProvider>(context,listen: false);
   }
 
   sendMessage(){
+     _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(seconds:1 ),
+        curve: Curves.easeInOut,
+      );
             log("sending....");
             _socket.emit('message',{
               'sender':widget.name,
@@ -39,6 +45,7 @@ class _MessageDetailsState extends State<GroupMessage> {
             });
             message.clear();
            FocusManager.instance.primaryFocus!.unfocus();
+          
           }
 
        connetSocket(){
@@ -48,6 +55,12 @@ class _MessageDetailsState extends State<GroupMessage> {
         _socket.on('message', (data) {
           final vm = Provider.of<HomeProvider>(context,listen: false);
           vm.addNewMessage(Message.fromMap(data));
+          _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(seconds:1 ),
+        curve: Curves.easeInOut,
+      );
+
         });
                }
   @override
@@ -69,9 +82,9 @@ class _MessageDetailsState extends State<GroupMessage> {
                 children: [
                   Text(
                     widget.name,
-                    style: TextStyle(color: Colors.black),
+                    style: const TextStyle(color: Colors.black),
                   ),
-                Text("Ui/Ux designer",style: TextStyle(color: Colors.grey),)
+                const Text("Ui/Ux designer",style: TextStyle(color: Colors.grey),)
                 ],
               ),
               actions: const [
@@ -81,11 +94,14 @@ class _MessageDetailsState extends State<GroupMessage> {
                 )
               ],
             ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Consumer<HomeProvider>(
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        child: Column(
+          children: [
+            Consumer<HomeProvider>(
               builder: (_, provider, __) => ListView.separated(
+                shrinkWrap: true,
+                physics: const ScrollPhysics(),
                 padding: const EdgeInsets.all(16),
                 itemBuilder: (context, index) {
                   final message = provider.messages[index];
@@ -128,40 +144,46 @@ class _MessageDetailsState extends State<GroupMessage> {
                 itemCount: provider.messages.length,
               ),
             ),
-          ),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.grey.shade200,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-            child: SafeArea(
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: message,
-                      decoration: const InputDecoration(
-                        hintText: 'Type your message here...',
-                        border: InputBorder.none,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      if (message.text.trim().isNotEmpty) {
-                        sendMessage();
-                      }
-                    },
-                    icon: const Icon(Icons.send),
-                  )
-                ],
-              ),
-            ),
-          )
-        ],
+           
+            
+          ],
+        ),
       ),
+      bottomNavigationBar: BottomAppBar(child: Padding(
+       padding: MediaQuery.of(context).viewInsets,
+        child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade200,
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                ),
+                
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: message,
+                          decoration: const InputDecoration(
+                            hintText: 'Type your message here...',
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          if (message.text.trim().isNotEmpty) {
+                            sendMessage();
+                          }
+                        },
+                        icon: const Icon(Icons.send),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+      ),),
     );
   }
 }

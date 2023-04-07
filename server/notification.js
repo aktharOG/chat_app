@@ -40,6 +40,7 @@ const defualtapp = admin.initializeApp({
        }).catch(function(error) {
     
         res.send({"Message": "Error sending notification "+error});
+        console.log(error)
     });
     }catch(error){
         res.send({
