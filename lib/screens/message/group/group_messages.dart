@@ -5,6 +5,7 @@ import 'package:chat_app/provider/home_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 
@@ -27,12 +28,23 @@ class _MessageDetailsState extends State<GroupMessage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-  _socket =  IO.io("https://my-chat-app-1slx.onrender.com",IO.OptionBuilder().setTransports(['websocket']).setQuery({'username':widget.name}).build());
-  connetSocket();
+    peer();
+
+ 
   provider = Provider.of<HomeProvider>(context,listen: false);
+  provider.load();
   }
 
-  sendMessage(){
+  peer()async{
+     SharedPreferences preferences =await SharedPreferences.getInstance();
+         var token = preferences.getString("token");
+    _socket =  IO.io("http://192.168.1.2:3000",IO.OptionBuilder().setTransports(['websocket']).setQuery({'username':widget.name,'token':token}).build());
+     connetSocket();
+  }
+
+  sendMessage()async{
+        SharedPreferences preferences =await SharedPreferences.getInstance();
+         var token = preferences.getString("token");
      _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(seconds:1 ),
@@ -41,12 +53,14 @@ class _MessageDetailsState extends State<GroupMessage> {
             log("sending....");
             _socket.emit('message',{
               'sender':widget.name,
-            'message': message.text.trim()
+            'message': message.text.trim(),
+            'token':token
             });
             message.clear();
            FocusManager.instance.primaryFocus!.unfocus();
           
           }
+        
 
        connetSocket(){
         _socket.onConnect((data) => log('connection established'));
@@ -65,6 +79,8 @@ class _MessageDetailsState extends State<GroupMessage> {
                }
   @override
   Widget build(BuildContext context) {
+      provider = Provider.of<HomeProvider>(context,listen: true);
+    
     return Scaffold(
       backgroundColor: Colors.white,
       appBar:  AppBar(
@@ -105,6 +121,8 @@ class _MessageDetailsState extends State<GroupMessage> {
                 padding: const EdgeInsets.all(16),
                 itemBuilder: (context, index) {
                   final message = provider.messages[index];
+                  //Map data = provider.message[index];
+                //  log(data['message'] +'akthar');
                   return Wrap(
                     alignment: message.sender == widget.name
                         ? WrapAlignment.end
@@ -129,7 +147,7 @@ class _MessageDetailsState extends State<GroupMessage> {
                               Text(message.message),
                               Text(
                                 DateFormat('hh:mm a').format(message.sentAt),
-                                style: Theme.of(context).textTheme.caption,
+                                style: Theme.of(context).textTheme.bodySmall,
                               ),
                             ],
                           ),
