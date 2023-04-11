@@ -11,9 +11,20 @@ import 'package:http/http.dart' as http;
 
 class HomeProvider extends ChangeNotifier {
    List<Message> _messages = [];
+    bool showDeleteOptions = false;
 
+    showOptions(){
+      showDeleteOptions = !showDeleteOptions;
+      notifyListeners();
+    }
+
+    cancelOption(){
+      showDeleteOptions = false;
+      notifyListeners();
+    }
     load()async{
       _messages =await loadModels();
+     // log(_messages.toString());
       notifyListeners();
     }
 
@@ -21,10 +32,18 @@ class HomeProvider extends ChangeNotifier {
 
   addNewMessage(Message message)async {
     _messages.add(message);
+    notifyListeners();
    await saveModels(_messages);
     notifyListeners();
   }
 
+  deleteMessage(Message message)async{
+    _messages.remove(message);
+    notifyListeners();
+    await saveModels(messages);
+    notifyListeners();
+  }
+  
   Future<void> saveModels(List<Message> models) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   List<String> modelsJson = models.map((model) => json.encode(model.toJson())).toList();
@@ -35,6 +54,15 @@ Future<List<Message>> loadModels() async {
   List<String> modelsJson = prefs.getStringList('models') ?? [];
   List<Message> models = modelsJson.map((modelJson) => Message.fromJson(json.decode(modelJson))).toList();
   return models;
+}
+Future<void> setUserLoggedIn(bool isLoggedIn,String name) async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('is_logged_in', isLoggedIn ? name : 'false');
+}
+Future<bool> isUserLoggedIn() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? isLoggedIn = prefs.getString('is_logged_in');
+  return isLoggedIn == 'true';
 }
 
  //List<dynamic> message= [];

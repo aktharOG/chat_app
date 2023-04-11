@@ -1,3 +1,4 @@
+import 'package:chat_app/provider/home_provider.dart';
 import 'package:chat_app/screens/message/group/group_messages.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -21,9 +22,12 @@ class _LoginScreenState extends State<GetStarted> {
   }
 
   _login() {
+    final home = Provider.of<HomeProvider>(context,listen: false);
     final provider = Provider.of<LoginProvider>(context, listen: false);
     if (_usernameController.text.trim().isNotEmpty) {
       provider.setErrorMessage('');
+      
+      
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(

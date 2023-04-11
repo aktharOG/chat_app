@@ -3,10 +3,12 @@ import 'dart:convert';
 class Message {
   final String message;
 final String sender;
-final DateTime sentAt;
+final String image;
+final int sentAt;
   Message({
     required this.message,
     required this.sender,
+    required this.image,
     required this.sentAt,
   });
 
@@ -16,6 +18,7 @@ final DateTime sentAt;
     result.addAll({'message': message});
     result.addAll({'sender': sender});
     result.addAll({'sentAt': sentAt});
+    result.addAll({'image':image});
   
     return result;
   }
@@ -24,7 +27,8 @@ final DateTime sentAt;
     return Message(
       message: map['message'] ?? '',
       sender: map['sender'] ?? '',
-      sentAt: DateTime.fromMillisecondsSinceEpoch(map['sentAt']*1000),
+      sentAt: map['sentAt']??0, 
+      image: map['image']??'',
     );
   }
 

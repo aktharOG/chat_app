@@ -124,7 +124,8 @@ io.on('connection', (socket) => {
     const message = {
       message: data.message,
       sender: username,
-      sentAt: Date.now()
+      sentAt: Date.now(),
+      image:data.image
     }
 
 

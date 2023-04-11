@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:chat_app/provider/home_provider.dart';
+import 'package:chat_app/provider/image_provider.dart';
 import 'package:chat_app/provider/login_provider.dart';
 import 'package:chat_app/screens/mainpage/home_page.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -13,7 +14,7 @@ import 'notification/notification_service.dart';
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-
+  
   await PushNotificationService().setupInteractedMessage();
   var token =await FirebaseMessaging.instance.getToken();
     SharedPreferences preferences =await SharedPreferences.getInstance();
@@ -32,12 +33,14 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
+  
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LoginProvider(),),
-        ChangeNotifierProvider(create: (context) => HomeProvider(),)
+        ChangeNotifierProvider(create: (context) => HomeProvider(),),
+        ChangeNotifierProvider(create: (context) => STImageProvider(),)
       ],
       child: MaterialApp(
         title: 'Flutter Demo',
